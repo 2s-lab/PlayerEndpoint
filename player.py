@@ -15,17 +15,24 @@ class Player(Resource):
     def post(self):
         trackUrl = request.get_json()["trackUrl"]
         mp3file = urlopen(trackUrl)
-        hash_object = hashlib.sha1(trackUrl.encode())
-        with open('./music/' + hash_object.hexdigest() + '.mp3', 'wb') as output:
+        url_hash = Utils.get_string_hash(trackUrl)
+        with open('./music/' + url_hash + '.mp3', 'wb') as output:
             output.write(mp3file.read())
         mixer.init()
-        mixer.music.load('./music/' + hash_object.hexdigest() + '.mp3')
+        mixer.music.load('./music/' + url_hash + '.mp3')
         mixer.music.play()
         return jsonify("playing")
 
     def delete(self):
         mixer.music.stop()
         return jsonify("stopped")
+
+
+class Utils():
+    @staticmethod
+    def get_string_hash(the_string):
+        hash_object = hashlib.sha1(the_string.encode())
+        return hash_object.hexdigest()
 
 
 api.add_resource(Player, '/play')
